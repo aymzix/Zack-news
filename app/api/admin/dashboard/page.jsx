@@ -1,0 +1,105 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  async function loadStats() {
+    try {
+      const res = await fetch("/api/admin/stats", {
+        cache: "no-store",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStats(data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  return (
+    <main className="page-section">
+      <div className="container">
+        <div className="section-header">
+          <div>
+            <p className="news-category">ZACK NEWS</p>
+            <h1 className="section-title">لوحة التحكم</h1>
+          </div>
+
+          <a href="/ingest" className="primary-button">
+            جلب الأخبار الآن
+          </a>
+        </div>
+
+        {loading ? (
+          <p>جاري تحميل الإحصائيات...</p>
+        ) : (
+          <div className="dashboard-grid">
+            <div className="stat-card">
+              <div className="stat-label">إجمالي الأخبار</div>
+              <div className="stat-value">{stats?.total ?? 0}</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-label">الأخبار المنشورة</div>
+              <div className="stat-value">{stats?.published ?? 0}</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-label">قيد المعالجة</div>
+              <div className="stat-value">{stats?.pending ?? 0}</div>
+            </div>
+
+            <div className="stat-card">
+              <div className="stat-label">المصادر النشطة</div>
+              <div className="stat-value">{stats?.sources ?? 0}</div>
+            </div>
+          </div>
+        )}
+
+        <div className="admin-card" style={{ marginTop: "30px" }}>
+          <h2>آخر الأخبار</h2>
+
+          {stats?.latestNews?.length ? (
+            <div style={{ marginTop: "20px" }}>
+              {stats.latestNews.map((article) => (
+                <div
+                  key={article.id}
+                  style={{
+                    padding: "15px 0",
+                    borderBottom: "1px solid #eee",
+                  }}
+                >
+                  <strong>{article.title}</strong>
+
+                  <div
+                    style={{
+                      marginTop: "6px",
+                      fontSize: "14px",
+                      opacity: 0.7,
+                    }}
+                  >
+                    {article.category?.name || "بدون تصنيف"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p>لا توجد أخبار بعد.</p>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+                         }
